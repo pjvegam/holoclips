@@ -8,7 +8,7 @@ from datetime import datetime
 from datetime import timedelta
 from dotenv import load_dotenv
 from threading import Thread
-from pytubefix.exceptions import (
+from pytube.exceptions import (
     VideoPrivate,
     VideoUnavailable,
     VideoRegionBlocked,
