@@ -52,7 +52,6 @@ source = { virtual = "." }
 dependencies = [
     { name = "python-dotenv" },
     { name = "pytube2" },
-    { name = "pytubefix" },
     { name = "requests" },
 ]
 
@@ -60,7 +59,6 @@ dependencies = [
 requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "pytube2", specifier = ">=15.0.12" },
-    { name = "pytubefix", specifier = ">=8.12.0" },
     { name = "requests", specifier = ">=2.32.3" },
 ]
 
@@ -89,15 +87,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b6/2a/057a9e108e638ef863f460185346bca91039c84075229888b2f37ea1d4de/pytube2-15.0.12.tar.gz", hash = "sha256:e195820ed03e650a13c79475abd12e7b2ae5d3db03320dcf06403bba0913c26c", size = 70705 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e2/83/5fba526409e3649e5af73f20d2af70240cc0821c061889a0a797d797fb02/pytube2-15.0.12-py3-none-any.whl", hash = "sha256:9ef714971568476457d2e906e132ccb074ac2fd276b810e2679c4cafc04ef310", size = 60187 },
-]
-
-[[package]]
-name = "pytubefix"
-version = "8.12.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/61/fe/8d8e1426ebd070ee35184a887ff7a600d5435ab2353844d228f6d901a32d/pytubefix-8.12.0.tar.gz", hash = "sha256:8a2b51a06efbec926ad88d2d686b6a66c7da37edf406eab7347d4ee43b638a4b", size = 732987 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/03/9b/e12bc6bad2ced372932446c5a78e6e81497324d51a6cc62fafe626f0df18/pytubefix-8.12.0-py3-none-any.whl", hash = "sha256:560b0f17b5a5b86fa9a542b02049eaa06492f2f6f66b787244333673387343eb", size = 730557 },
 ]
 
 [[package]]
