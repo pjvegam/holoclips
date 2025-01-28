@@ -19,6 +19,7 @@ from pytube.exceptions import (
 load_dotenv()
 
 parser = argparse.ArgumentParser(description="Enviar fecha espefifica o dias atrasados")
+parser.add_argument("num_files", type=int, help="numero de videos")
 parser.add_argument("-f", "--fecha", type=str, help="fecha a,m,d.")
 parser.add_argument("-d", "--delay", type=int, help="dias atrasado")
 
@@ -58,7 +59,7 @@ url = 'https://holodex.net/api/v2/videos'
 
 offset = 0
 limit = 100
-n_clips = 10
+n_clips = args.num_files
 
 BestClips = []
 cont = 0
