@@ -17,8 +17,7 @@ from pytube.exceptions import (
     RecordingUnavailable,
 )
 
-env_path = os.path.abspath('.venv/.env')
-load_dotenv(dotenv_path=env_path)
+load_dotenv()
 
 parser = argparse.ArgumentParser(description="Enviar fecha espefifica o dias atrasados")
 parser.add_argument("-f", "--fecha", type=str, help="fecha a,m,d.")
@@ -40,7 +39,7 @@ else:
     fecha_deseada = datetime.now().replace(hour=00,minute=0,second=1,microsecond=0) - timedelta(days=2)
 
 if args.delay is not None:
-    fecha_deseada = fecha_deseada - temedelta(days=args.delay)
+    fecha_deseada = fecha_deseada - timedelta(days=args.delay)
 
 
 fecha_ahora = datetime.now()
