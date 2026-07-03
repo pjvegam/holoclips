@@ -22,6 +22,30 @@ python main.py 10 --fecha 2025.06.15
 python main.py 3 --delay 5
 ```
 
+## Requisitos del sistema
+
+Además de Python 3.12+ y [uv](https://docs.astral.sh/uv/), necesitas estos binarios instalados en el PATH (no vienen por pip):
+
+| Binario | Para qué | Obligatorio |
+|---------|----------|-------------|
+| **mpv** | Reproductor donde se abre el playlist generado | Sí |
+| **yt-dlp** | mpv lo usa internamente para resolver URLs de YouTube | Sí |
+| **ffmpeg** | yt-dlp lo usa para combinar streams de audio y video | Recomendado |
+
+```bash
+# Windows (winget) — yt-dlp.FFmpeg incluye ambos con parches para yt-dlp
+winget install yt-dlp.FFmpeg shinchiro.mpv
+
+# macOS (Homebrew)
+brew install ffmpeg mpv yt-dlp
+
+# Linux (Debian/Ubuntu)
+sudo apt install ffmpeg mpv
+pipx install yt-dlp   # o el método preferido de tu distro
+```
+
+> **Manten yt-dlp actualizado**: YouTube cambia seguido la lógica de extracción y rompe el resolver. Si tus playlists dejan de reproducir, actualiza yt-dlp primero.
+
 ## Setup
 
 ```bash
@@ -46,7 +70,6 @@ Requiere API key de [Holodex](https://holodex.net/api).
 - `requests` para HTTP
 - `python-dotenv` para config
 - Gestión de dependencias con `uv`
-- **MPV** debe estar en el PATH del sistema
 
 ## Estructura
 
