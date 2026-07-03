@@ -12,3 +12,7 @@ wheels/
 
 # files
 *.m3u
+
+# MPV screenshots
+mpv-shot*.jpg
+mpv-shot*.png

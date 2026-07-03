@@ -1,11 +1,10 @@
 [project]
 name = "holoclips"
 version = "0.1.0"
-description = "Add your description here"
+description = "CLI para descubrir los clips más vistos de canales de Hololive Production y generar playlists reproducibles en MPV"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "python-dotenv>=1.0.1",
-    "pytube2>=15.0.12",
     "requests>=2.32.3",
 ]
