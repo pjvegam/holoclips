@@ -7,14 +7,43 @@ from playlist_generator import PlaylistGenerator
 import argparse
 import logging
 import os
+import time
+import webbrowser
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Find top YouTube clips for specific channels")
     parser.add_argument("num_clips", type=int, nargs='?', default=5, help="Number of clips to include")
     parser.add_argument("-f", "--fecha", type=str, help="Date in format YYYY.MM.DD")
     parser.add_argument("-d", "--delay", type=int, help="Days ago")
+    parser.add_argument(
+        "--mpv",
+        action="store_true",
+        help="Reproducir el top con mpv en vez de abrirlo en el navegador (comportamiento por defecto)",
+    )
 
     return parser.parse_args()
+
+def print_top_clips_table(top_clips):
+    """Imprime una tabla con el ranking del top de clips antes de reproducir/abrir."""
+    # top_clips viene ordenado ascendente por views_per_hour; el ranking va del mejor al peor.
+    ranked = sorted(top_clips, key=lambda c: c.views_per_hour, reverse=True)
+
+    print()
+    print("=" * 96)
+    print(f" TOP {len(ranked)} CLIPS")
+    print("=" * 96)
+    print(f"{'#':<3}{'Vistas':>9}  {'V/hora':>9}  {'Peso':>5}  {'Dur':>5}  Título")
+    print("-" * 96)
+    for i, clip in enumerate(ranked, start=1):
+        title = clip.title if len(clip.title) <= 55 else clip.title[:54] + "…"
+        mins, secs = divmod(int(clip.duration), 60)
+        print(
+            f"{i:<3}{clip.views:>9,}  {clip.views_per_hour:>9.1f}  "
+            f"{clip.channel_weight:>5.2f}  {mins:>2}:{secs:02d}  {title}"
+        )
+    print("=" * 96)
+    print()
+
 
 def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -57,16 +86,33 @@ def main():
         logging.warning("No valid clips found after filtering")
         return
 
+    # Mostrar la tabla del ranking antes de reproducir/abrir en el navegador
+    print_top_clips_table(top_clips)
+
     # Generate playlist
     playlist_path = playlist_generator.create_playlist(top_clips)
     logging.info(f"Created playlist with {len(top_clips)} clips at {playlist_path}")
 
-    # Open with mpv
-    try:
-        #subprocess.run(['mpv', playlist_path])
-        os.system(f'mpv "{playlist_path}"')
-    except Exception as e:
-        logging.error(f"Failed to open mpv: {str(e)}")
+    # Con --mpv se reproduce el top con mpv. Por defecto se abren TODOS los top
+    # clips en el navegador (vistas reales que ayudan al clipper).
+    # top_clips viene ordenado ascendente por views_per_hour, asi que el mejor queda al final.
+    if args.mpv:
+        try:
+            #subprocess.run(['mpv', playlist_path])
+            os.system(f'mpv "{playlist_path}"')
+        except Exception as e:
+            logging.error(f"Failed to open mpv: {str(e)}")
+        return
+
+    # Abrir en el navegador (comportamiento por defecto)
+    for i, clip in enumerate(top_clips):
+        url = f"https://www.youtube.com/watch?v={clip.id}"
+        logging.info(f"Abriendo en el navegador: {clip.title} ({url})")
+        webbrowser.open_new_tab(url)
+        # Pequeño delay entre pestañas: sin esto el navegador las abre en
+        # paralelo y no respeta el orden. No dormir tras la ultima.
+        if i < len(top_clips) - 1:
+            time.sleep(0.8)
 
 
 if __name__ == "__main__":
