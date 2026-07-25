@@ -125,6 +125,8 @@ class ChannelRepository:
             "UClS3cnIUM9yzsBPQzeyX_8Q": Channel(name="Ruka Ch. 雨海ルカ", weight=3.81),
             "UCLIpj4TmXviSTNE_U5WG_Ug": Channel(name="Roa Ch. 海月雲ろあ", weight=3.81),
             "UCxsZ6NCzjU_t4YSxQLBcM5A": Channel(name="saba", weight=1.5),
+            "UCnn1Pb_JtyHbiDTELf7mgSA": Channel(name="Rei Ch. 悠針れい", weight=3.31), #A-Chan
+            "UCMBzCzLVj4J40PUtQUSY0eQ": Channel(name="鮫升コモリ", weight=3.31), #Ao
             #Illustrators
             "UCt30jJgChL8qeT9VPadidSw": Channel(name="しぐれうい", weight=3.31), #Shigure UI
             "UCbfv8uuUXt3RSJGEwxny5Rw": Channel(name="カグラナナchannel／ななかぐら", weight=1.0), #Kagura Nana
@@ -143,6 +145,9 @@ class ChannelRepository:
             "UC-jcaCw_DWLuWpcxVUjP2Sw": Channel(name="Nisha Nixyeva Ch.", weight=3.31),
             "UC4R6ddhBJp2bjQHVNxgNQSA": Channel(name="Akugaki Koa Ch. idol-ES", weight=3.31),
             "UCsFgdazMeQtf8lHvISB1DLQ": Channel(name="kyOresu", weight=1.0),
+            #mekPark
+            "UC3OH5FKQ3qtl4uRme_vZTgA": Channel(name="UNIT B (Pre-Debut) - mekPark", weight=3.31),
+            "UChpRPsAeSZn5DistGacR3iA": Channel(name="ACHRORA - mekPark", weight=3.31),
             #Others
             "UC7gxU6NXjKF1LrgOddPzgTw": Channel(name="Banzoin Hakka Ch. HOLOSTARS-EN", weight=1.0),
             "UCAr7rLi_Wn09G-XfTA07d4g": Channel(name="天神 子兎音 Tenjin Kotone", weight=1.0),
@@ -152,6 +157,8 @@ class ChannelRepository:
             "UCLHmLrj4pHHg3-iBJn_CqxA": Channel(name="Neuro-Sama", weight=1.0),
             "UCqe0-vqZwAvZUb22wCMu1fA": Channel(name="音ノ乃のの / NononoNono", weight=1.0),
             "UC9V3Y3_uzU5e-usObb6IE1w": Channel(name="星川サラ / Sara Hoshikawa", weight=3.31),
+            #hanaka
+            "UCP03XuewcMC2DaSFDJhqJmA": Channel(name="Haru Ch. 花前ハル", weight=5.0),
             }
 
     def get_channel_by_id(self, channel_id: str) -> Channel:
