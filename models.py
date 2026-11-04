@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 
 
 @dataclass
@@ -23,7 +23,7 @@ class Clip:
 
     @property
     def views_per_hour(self) -> float:
-        current_time = datetime.now()
+        current_time = datetime.now(UTC)
 
         if self.views <= 0:
             return 0

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
 import pytest
@@ -36,6 +36,13 @@ def test_process_clip_uses_every_channel_reference(clip_service, field):
     clips = {}
     clip_service._process_clip(make_clip_data(**{field: ["tracked_high"]}), clips)
     assert clips["clip"].channel_weight == 3.0
+
+
+def test_process_clip_keeps_holodex_time_zone(clip_service):
+    clips = {}
+    data = make_clip_data(sources=["tracked_low"], available_at="2026-11-04T18:00:03.000Z")
+    clip_service._process_clip(data, clips)
+    assert clips["clip"].available_at == datetime(2026, 11, 4, 18, 0, 3, tzinfo=UTC)
 
 
 def test_process_clip_keeps_highest_weight(clip_service):
@@ -93,7 +100,7 @@ def test_enrich_propagates_api_errors(clip_service):
 
 
 def test_get_top_clips_returns_best_ones_in_ascending_order(clip_service):
-    available_at = datetime.now() - timedelta(hours=10)
+    available_at = datetime.now(UTC) - timedelta(hours=10)
     clips = {
         name: make_clip(name, views=views, available_at=available_at)
         for name, views in [("low", 10), ("mid", 20), ("high", 30), ("unavailable", -1)]
@@ -103,7 +110,7 @@ def test_get_top_clips_returns_best_ones_in_ascending_order(clip_service):
 
 
 def test_get_top_clips_ranks_with_channel_weight(clip_service):
-    available_at = datetime.now() - timedelta(hours=10)
+    available_at = datetime.now(UTC) - timedelta(hours=10)
     clips = {
         "popular": make_clip("popular", views=100, weight=1.0, available_at=available_at),
         "weighted": make_clip("weighted", views=50, weight=3.0, available_at=available_at),

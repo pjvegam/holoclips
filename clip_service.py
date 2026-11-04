@@ -99,7 +99,7 @@ class ClipService:
             clip_collection[clip_id] = Clip(
                 id=clip_id,
                 title=clip_data["title"],
-                available_at=datetime.fromisoformat(clip_data["available_at"]).replace(tzinfo=None),
+                available_at=datetime.fromisoformat(clip_data["available_at"]),
                 duration=duration,
                 channel_weight=max_weight,
             )
