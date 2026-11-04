@@ -1,16 +1,18 @@
-from datetime import datetime, timedelta
-from config import Config
-from channel_repository import ChannelRepository
-from api_service import HolodexApiService
-from clip_service import ClipService
-from youtube_service import YouTubeService, YouTubeApiError
-from playlist_generator import PlaylistGenerator
 import argparse
 import logging
 import os
 import sys
 import time
 import webbrowser
+from datetime import datetime, timedelta
+
+from api_service import HolodexApiService
+from channel_repository import ChannelRepository
+from clip_service import ClipService
+from config import Config
+from playlist_generator import PlaylistGenerator
+from youtube_service import YouTubeApiError, YouTubeService
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Find top YouTube clips for specific channels")
@@ -112,7 +114,7 @@ def main():
             #subprocess.run(['mpv', playlist_path])
             os.system(f'mpv "{playlist_path}"')
         except Exception as e:
-            logging.error(f"Failed to open mpv: {str(e)}")
+            logging.error(f"Failed to open mpv: {e!s}")
         return
 
     # Abrir en el navegador (comportamiento por defecto)

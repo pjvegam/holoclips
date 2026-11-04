@@ -8,3 +8,32 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "requests>=2.32.3",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "S",   # flake8-bandit (seguridad)
+    "RUF", # ruff-specific
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Los nombres de canal usan caracteres Unicode propios: son el dato, no una confusion tipografica
+"channel_repository.py" = ["RUF001", "E501"]
+"tests/*" = ["S101"] # assert en tests es lo esperado

@@ -1,8 +1,7 @@
+from datetime import datetime
+
 import requests
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional
-from models import Clip, Channel
-from config import Config
+
 
 class HolodexApiService:
     BASE_URL = 'https://holodex.net/api/v2/videos'
@@ -12,7 +11,7 @@ class HolodexApiService:
         self.headers = {'X-APIKEY': api_key}
 
     def get_clips(self, from_date: datetime, to_date: datetime,
-                  langs: List[str] = None, limit: int = 100, offset: int = 0) -> List[dict]:
+                  langs: list[str] = None, limit: int = 100, offset: int = 0) -> list[dict]:
         """Fetch clips from the Holodex API."""
         if langs is None:
             langs = ['en', 'es']

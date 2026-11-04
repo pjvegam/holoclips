@@ -1,9 +1,10 @@
-from typing import Dict
+
 from models import Channel
+
 
 class ChannelRepository:
     def __init__(self):
-        self.channels: Dict[str, Channel] = {
+        self.channels: dict[str, Channel] = {
             #company
             "UCJFZiqLMntJufDCHc6bQixg": Channel(name="hololive ホロライブ - VTuber Group", weight=1.0),
             "UC10wVt6hoQiwySRhz7RdOUA": Channel(name="hololive DEV_IS", weight=1.0),

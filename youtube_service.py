@@ -1,7 +1,7 @@
 # youtube_service.py
-from typing import Dict, List
 import logging
 import time
+
 import requests
 
 
@@ -18,7 +18,7 @@ class YouTubeService:
         # La key va en cabecera para que no aparezca en URLs ni en los logs
         self.headers = {'X-Goog-Api-Key': api_key}
 
-    def get_videos_views(self, video_ids: List[str]) -> Dict[str, int]:
+    def get_videos_views(self, video_ids: list[str]) -> dict[str, int]:
         """Get view counts by video ID. Unavailable videos are left out of the result.
 
         Raises YouTubeApiError if a batch fails: a partial result would produce a wrong top.
@@ -28,7 +28,7 @@ class YouTubeService:
             views.update(self._fetch_batch(video_ids[i:i + self.BATCH_SIZE]))
         return views
 
-    def _fetch_batch(self, video_ids: List[str]) -> Dict[str, int]:
+    def _fetch_batch(self, video_ids: list[str]) -> dict[str, int]:
         """Fetch view counts for up to BATCH_SIZE videos (1 quota unit), retrying transient errors."""
         params = {'part': 'statistics', 'id': ','.join(video_ids)}
 
@@ -55,7 +55,7 @@ class YouTubeService:
         raise YouTubeApiError(f"sin respuesta tras {self.MAX_ATTEMPTS} intentos: {error}")
 
     @staticmethod
-    def _parse_views(response: requests.Response) -> Dict[str, int]:
+    def _parse_views(response: requests.Response) -> dict[str, int]:
         views = {}
         for item in response.json().get('items', []):
             view_count = item['statistics'].get('viewCount')

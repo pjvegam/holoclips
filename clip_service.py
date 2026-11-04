@@ -1,11 +1,12 @@
-from typing import List, Dict
-from datetime import datetime, timedelta
+import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timedelta
+
+from api_service import HolodexApiService
+from channel_repository import ChannelRepository
 from models import Clip
 from youtube_service import YouTubeService
-from channel_repository import ChannelRepository
-from api_service import HolodexApiService
-import logging
+
 
 class ClipService:
     def __init__(self, api_service: HolodexApiService, channel_repo: ChannelRepository,
@@ -14,7 +15,7 @@ class ClipService:
         self.channel_repo = channel_repo
         self.youtube_service = youtube_service
 
-    def fetch_clips_for_date(self, target_date: datetime, max_workers: int = 10) -> Dict[str, Clip]:
+    def fetch_clips_for_date(self, target_date: datetime, max_workers: int = 10) -> dict[str, Clip]:
         """Fetch all clips for a specific date using parallel processing."""
         from_date = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
         to_date = from_date + timedelta(days=1)
@@ -28,7 +29,7 @@ class ClipService:
             futures = []
             for offset_value in range(0, max_offset, limit):
                 futures.append(executor.submit(
-                    self.api_service.get_clips, 
+                    self.api_service.get_clips,
                     from_date, to_date, limit=limit, offset=offset_value
                 ))
 
@@ -49,12 +50,12 @@ class ClipService:
                         self._process_clip(clip, all_clips)
 
                 except Exception as e:
-                    logging.error(f"Error obteniendo clips: {str(e)}")
+                    logging.error(f"Error obteniendo clips: {e!s}")
 
         logging.info(f"Total clips encontrados: {len(all_clips)}")
         return all_clips
 
-    def _process_clip(self, clip_data: dict, clip_collection: Dict[str, Clip]) -> None:
+    def _process_clip(self, clip_data: dict, clip_collection: dict[str, Clip]) -> None:
         """Process a clip and add it to the collection if it matches criteria."""
         channel_ids = self.channel_repo.get_all_channel_ids()
         clip_id = clip_data['id']
@@ -92,7 +93,7 @@ class ClipService:
         else:
             clip_collection[clip_id].channel_weight = max(clip_collection[clip_id].channel_weight, max_weight)
 
-    def enrich_clips_with_views(self, clips: Dict[str, Clip]) -> None:
+    def enrich_clips_with_views(self, clips: dict[str, Clip]) -> None:
         """Add view counts to clips, marking the ones without data as unavailable."""
         views = self.youtube_service.get_videos_views(list(clips))
         for clip_id, clip in clips.items():
@@ -104,7 +105,7 @@ class ClipService:
         if missing:
             logging.info(f"{missing}/{len(clips)} clips sin vistas disponibles (borrados, privados u ocultos)")
 
-    def get_top_clips(self, clips: Dict[str, Clip], count: int) -> List[Clip]:
+    def get_top_clips(self, clips: dict[str, Clip], count: int) -> list[Clip]:
         """Get the top N clips sorted by views per hour, then return them in ascending order."""
         # Filter out invalid views
         valid_clips = [clip for clip in clips.values() if clip.views >= 0]
