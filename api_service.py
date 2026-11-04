@@ -5,6 +5,7 @@ import requests
 
 class HolodexApiService:
     BASE_URL = "https://holodex.net/api/v2/videos"
+    MAX_LIMIT = 50  # Maximo documentado para limit
 
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -15,7 +16,7 @@ class HolodexApiService:
         from_date: datetime,
         to_date: datetime,
         langs: list[str] | None = None,
-        limit: int = 100,
+        limit: int = MAX_LIMIT,
         offset: int = 0,
     ) -> list[dict]:
         """Fetch clips from the Holodex API."""

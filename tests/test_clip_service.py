@@ -1,3 +1,4 @@
+import logging
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
@@ -59,16 +60,12 @@ def test_process_clip_repeated_clip_keeps_highest_weight(clip_service):
     assert clips["clip"].channel_weight == 3.0
 
 
-def test_fetch_clips_skips_missing_and_survives_failed_pages():
-    pages = {
-        0: [
-            make_clip_data("ok", sources=["tracked_low"]),
-            make_clip_data("gone", sources=["tracked_low"], status="missing"),
-        ],
-        100: RuntimeError("holodex caido"),
-    }
+def service_with_pages(pages):
+    """Build a ClipService over scripted Holodex pages (by offset), recording the requests."""
+    requests_made = []
 
     def get_clips(from_date, to_date, limit, offset):
+        requests_made.append({"limit": limit, "offset": offset})
         page = pages.get(offset, [])
         if isinstance(page, Exception):
             raise page
@@ -79,7 +76,51 @@ def test_fetch_clips_skips_missing_and_survives_failed_pages():
         channel_repo=FakeChannelRepository({"tracked_low": 1.0}),
         youtube_service=None,
     )
+    return service, requests_made
+
+
+def full_page(prefix):
+    return [make_clip_data(f"{prefix}{i}", sources=["tracked_low"]) for i in range(50)]
+
+
+def test_fetch_clips_skips_missing():
+    service, _ = service_with_pages(
+        {
+            0: [
+                make_clip_data("ok", sources=["tracked_low"]),
+                make_clip_data("gone", sources=["tracked_low"], status="missing"),
+            ]
+        }
+    )
     assert list(service.fetch_clips_for_date(datetime(2026, 1, 1))) == ["ok"]
+
+
+def test_fetch_clips_stops_at_first_incomplete_page():
+    short_page = [make_clip_data("last", sources=["tracked_low"])]
+    service, requests_made = service_with_pages({0: full_page("a"), 50: short_page})
+    clips = service.fetch_clips_for_date(datetime(2026, 1, 1))
+    assert len(clips) == 51
+    assert requests_made == [{"limit": 50, "offset": 0}, {"limit": 50, "offset": 50}]
+
+
+def test_fetch_clips_stops_at_empty_page_after_exact_multiple():
+    service, requests_made = service_with_pages({0: full_page("a"), 50: []})
+    assert len(service.fetch_clips_for_date(datetime(2026, 1, 1))) == 50
+    assert [request["offset"] for request in requests_made] == [0, 50]
+
+
+def test_fetch_clips_warns_when_reaching_the_maximum(caplog):
+    pages = {offset: full_page(f"p{offset}-") for offset in range(0, 500, 50)}
+    service, requests_made = service_with_pages(pages)
+    with caplog.at_level(logging.WARNING):
+        assert len(service.fetch_clips_for_date(datetime(2026, 1, 1))) == 500
+    assert len(requests_made) == 10
+    assert "tope" in caplog.text
+
+
+def test_fetch_clips_survives_failed_pages():
+    service, _ = service_with_pages({0: full_page("a"), 50: RuntimeError("holodex caido"), 100: []})
+    assert len(service.fetch_clips_for_date(datetime(2026, 1, 1))) == 50
 
 
 def test_enrich_marks_clips_without_views_as_unavailable(clip_service):

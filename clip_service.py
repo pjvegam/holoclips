@@ -1,5 +1,4 @@
 import logging
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 
 from api_service import HolodexApiService
@@ -19,47 +18,34 @@ class ClipService:
         self.channel_repo = channel_repo
         self.youtube_service = youtube_service
 
-    def fetch_clips_for_date(self, target_date: datetime, max_workers: int = 10) -> dict[str, Clip]:
-        """Fetch all clips for a specific date using parallel processing."""
+    def fetch_clips_for_date(self, target_date: datetime) -> dict[str, Clip]:
+        """Fetch all clips for a specific date, page by page."""
         from_date = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
         to_date = from_date + timedelta(days=1)
 
         all_clips = {}
-        limit = 100
+        limit = HolodexApiService.MAX_LIMIT
         max_offset = 500  # Limitar a 500 por seguridad
 
-        # Implementar procesamiento en paralelo como el original
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = []
-            for offset_value in range(0, max_offset, limit):
-                futures.append(
-                    executor.submit(
-                        self.api_service.get_clips,
-                        from_date,
-                        to_date,
-                        limit=limit,
-                        offset=offset_value,
-                    )
+        for offset in range(0, max_offset, limit):
+            try:
+                clip_data = self.api_service.get_clips(
+                    from_date, to_date, limit=limit, offset=offset
                 )
+            except Exception as e:
+                logging.error(f"Error obteniendo clips: {e!s}")
+                continue
 
-            for future in as_completed(futures):
-                try:
-                    clip_data = future.result()
-                    if not clip_data:
-                        continue
+            for clip in clip_data:
+                if clip["status"] == "missing":
+                    continue
+                self._process_clip(clip, all_clips)
 
-                    # Menos resultados que el límite significa que hemos llegado al final
-                    if len(clip_data) < limit:
-                        logging.info(f"Reached end of results with {len(clip_data)} clips")
-
-                    # Procesar los clips obtenidos
-                    for clip in clip_data:
-                        if clip["status"] == "missing":
-                            continue
-                        self._process_clip(clip, all_clips)
-
-                except Exception as e:
-                    logging.error(f"Error obteniendo clips: {e!s}")
+            # Menos resultados que el límite significa que hemos llegado al final
+            if len(clip_data) < limit:
+                break
+        else:
+            logging.warning(f"Se alcanzó el tope de {max_offset} clips: puede haber más")
 
         logging.info(f"Total clips encontrados: {len(all_clips)}")
         return all_clips
