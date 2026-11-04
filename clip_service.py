@@ -19,7 +19,10 @@ class ClipService:
         self.youtube_service = youtube_service
 
     def fetch_clips_for_date(self, target_date: datetime) -> dict[str, Clip]:
-        """Fetch all clips for a specific date, page by page."""
+        """Fetch all clips for a specific date, page by page.
+
+        Raises HolodexApiError if a page fails: a partial result would produce a wrong top.
+        """
         from_date = target_date.replace(hour=0, minute=0, second=0, microsecond=0)
         to_date = from_date + timedelta(days=1)
 
@@ -28,13 +31,7 @@ class ClipService:
         max_offset = 500  # Limitar a 500 por seguridad
 
         for offset in range(0, max_offset, limit):
-            try:
-                clip_data = self.api_service.get_clips(
-                    from_date, to_date, limit=limit, offset=offset
-                )
-            except Exception as e:
-                logging.error(f"Error obteniendo clips: {e!s}")
-                continue
+            clip_data = self.api_service.get_clips(from_date, to_date, limit=limit, offset=offset)
 
             for clip in clip_data:
                 if clip["status"] == "missing":

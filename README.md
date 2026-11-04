@@ -106,7 +106,7 @@ holoclips/
 - **Weighted ranking**: cada canal tiene un peso asignado (miembros con menos suscriptores tienen peso mayor). Los clips se ordenan por `score = vistas por hora × peso`, de modo que canales menos populares no queden siempre invisibles bajo las estrellas. La tabla muestra las vistas por hora reales y el score por separado.
 - **Repository pattern** para canales: la lista curada vive en `channels.toml` y se comporta como catálogo consultable, así que agregar un canal no requiere tocar código.
 - **Separación en servicios**: `api_service`, `clip_service`, `youtube_service`, `playlist_generator`, `output` — cada uno con una responsabilidad, facilita testear y modificar.
-- **Sin top parcial**: si YouTube Data API falla tras los reintentos, el programa termina con error en vez de generar un ranking al que le falten clips.
+- **Sin top parcial**: si Holodex falla, o YouTube Data API tras los reintentos, el programa termina con error en vez de generar un ranking al que le falten clips.
 
 ## Estado
 

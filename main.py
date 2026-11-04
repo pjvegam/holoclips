@@ -3,7 +3,7 @@ import logging
 import sys
 from datetime import datetime, timedelta
 
-from api_service import HolodexApiService
+from api_service import HolodexApiError, HolodexApiService
 from channel_repository import ChannelRepository
 from clip_service import ClipService
 from config import Config
@@ -62,7 +62,11 @@ def main():
 
     # Get clips and calculate metrics
     logging.info(f"Fetching clips for {target_date.date()}")
-    clips = clip_service.fetch_clips_for_date(target_date)
+    try:
+        clips = clip_service.fetch_clips_for_date(target_date)
+    except HolodexApiError as e:
+        logging.error(f"No se pudieron obtener los clips, no se genera el top: {e}")
+        sys.exit(1)
 
     if not clips:
         logging.warning(f"No clips found for {target_date.date()}")

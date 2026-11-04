@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 from helpers import FakeChannelRepository, make_clip, make_clip_data
 
+from api_service import HolodexApiError
 from clip_service import ClipService
 from youtube_service import YouTubeApiError
 
@@ -118,9 +119,13 @@ def test_fetch_clips_warns_when_reaching_the_maximum(caplog):
     assert "tope" in caplog.text
 
 
-def test_fetch_clips_survives_failed_pages():
-    service, _ = service_with_pages({0: full_page("a"), 50: RuntimeError("holodex caido"), 100: []})
-    assert len(service.fetch_clips_for_date(datetime(2026, 1, 1))) == 50
+def test_fetch_clips_stops_when_a_page_fails():
+    service, requests_made = service_with_pages(
+        {0: full_page("a"), 50: HolodexApiError("holodex caido"), 100: []}
+    )
+    with pytest.raises(HolodexApiError):
+        service.fetch_clips_for_date(datetime(2026, 1, 1))
+    assert [request["offset"] for request in requests_made] == [0, 50]
 
 
 def test_enrich_marks_clips_without_views_as_unavailable(clip_service):
