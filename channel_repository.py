@@ -213,7 +213,7 @@ class ChannelRepository:
             "UCP03XuewcMC2DaSFDJhqJmA": Channel(name="Haru Ch. 花前ハル", weight=5.0),
         }
 
-    def get_channel_by_id(self, channel_id: str) -> Channel:
+    def get_channel_by_id(self, channel_id: str) -> Channel | None:
         return self.channels.get(channel_id)
 
     def get_all_channel_ids(self) -> list:

@@ -73,6 +73,10 @@ def main():
 
     api_key = Config.API_KEY1 if target_date.day % 2 == 0 else Config.API_KEY2
 
+    if not api_key:
+        logging.error("Falta API_KEY1 o API_KEY2 en el .env")
+        sys.exit(1)
+
     if not Config.YOUTUBE_API_KEY:
         logging.error("Falta YOUTUBE_API_KEY en el .env")
         sys.exit(1)
