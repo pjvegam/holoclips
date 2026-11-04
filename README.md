@@ -56,7 +56,7 @@ pipx install yt-dlp   # o el método preferido de tu distro
 cp .env.example .env
 
 # Editar .env con tus API keys
-# API_KEY1 y API_KEY2 son de Holodex (rotan por paridad del día para evitar rate limits)
+# HOLODEX_API_KEY es de Holodex (para listar los clips)
 # YOUTUBE_API_KEY es de YouTube Data API v3 (para obtener las vistas de los clips)
 
 # Instalar dependencias con uv
@@ -104,7 +104,6 @@ holoclips/
 ## Decisiones de diseño
 
 - **Weighted ranking**: cada canal tiene un peso asignado (miembros con menos suscriptores tienen peso mayor). Los clips se ordenan por `score = vistas por hora × peso`, de modo que canales menos populares no queden siempre invisibles bajo las estrellas. La tabla muestra las vistas por hora reales y el score por separado.
-- **Rotación de API keys por paridad del día**: para no exceder rate limits de Holodex cuando se corre esto diariamente, se alterna entre dos keys según si el día del mes es par o impar.
 - **Repository pattern** para canales: la lista curada vive en `channels.toml` y se comporta como catálogo consultable, así que agregar un canal no requiere tocar código.
 - **Separación en servicios**: `api_service`, `clip_service`, `youtube_service`, `playlist_generator`, `output` — cada uno con una responsabilidad, facilita testear y modificar.
 - **Sin top parcial**: si YouTube Data API falla tras los reintentos, el programa termina con error en vez de generar un ranking al que le falten clips.

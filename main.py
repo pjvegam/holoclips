@@ -46,10 +46,8 @@ def main():
 
     num_clips = args.num_clips
 
-    api_key = Config.API_KEY1 if target_date.day % 2 == 0 else Config.API_KEY2
-
-    if not api_key:
-        logging.error("Falta API_KEY1 o API_KEY2 en el .env")
+    if not Config.HOLODEX_API_KEY:
+        logging.error("Falta HOLODEX_API_KEY en el .env")
         sys.exit(1)
 
     if not Config.YOUTUBE_API_KEY:
@@ -57,7 +55,7 @@ def main():
         sys.exit(1)
 
     channel_repo = ChannelRepository()
-    api_service = HolodexApiService(api_key)
+    api_service = HolodexApiService(Config.HOLODEX_API_KEY)
     youtube_service = YouTubeService(Config.YOUTUBE_API_KEY)
     clip_service = ClipService(api_service, channel_repo, youtube_service)
     playlist_generator = PlaylistGenerator()
