@@ -98,10 +98,11 @@ class ClipService:
         for clip_id, clip in clips.items():
             clip.views = views.get(clip_id, -1)  # -1 marca como no disponible
 
-        # Sin esto, un top calculado con datos parciales pareceria correcto
+        # Un fallo de la API ya habria lanzado YouTubeApiError: estos clips existen en
+        # Holodex pero YouTube no da sus vistas, asi que el top sigue siendo fiable
         missing = len(clips) - len(views)
         if missing:
-            logging.warning(f"{missing}/{len(clips)} clips sin vistas: el top puede estar incompleto")
+            logging.info(f"{missing}/{len(clips)} clips sin vistas disponibles (borrados, privados u ocultos)")
 
     def get_top_clips(self, clips: Dict[str, Clip], count: int) -> List[Clip]:
         """Get the top N clips sorted by views per hour, then return them in ascending order."""

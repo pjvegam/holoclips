@@ -3,11 +3,12 @@ from config import Config
 from channel_repository import ChannelRepository
 from api_service import HolodexApiService
 from clip_service import ClipService
-from youtube_service import YouTubeService
+from youtube_service import YouTubeService, YouTubeApiError
 from playlist_generator import PlaylistGenerator
 import argparse
 import logging
 import os
+import sys
 import time
 import webbrowser
 
@@ -66,7 +67,7 @@ def main():
 
     if not Config.YOUTUBE_API_KEY:
         logging.error("Falta YOUTUBE_API_KEY en el .env")
-        return
+        sys.exit(1)
 
     channel_repo = ChannelRepository()
     api_service = HolodexApiService(api_key)
@@ -83,7 +84,11 @@ def main():
         return
 
     logging.info(f"Found {len(clips)} clips, fetching view counts...")
-    clip_service.enrich_clips_with_views(clips)
+    try:
+        clip_service.enrich_clips_with_views(clips)
+    except YouTubeApiError as e:
+        logging.error(f"No se pudieron obtener las vistas, no se genera el top: {e}")
+        sys.exit(1)
 
     # Get top N clips
     top_clips = clip_service.get_top_clips(clips, num_clips)

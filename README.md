@@ -49,8 +49,8 @@ pipx install yt-dlp   # o el método preferido de tu distro
 ## Setup
 
 ```bash
-# Copiar el ejemplo (si existe, sino crear .env manualmente)
-cp .env.example .env  # o crearlo directo
+# Copiar el ejemplo
+cp .env.example .env
 
 # Editar .env con tus API keys
 # API_KEY1 y API_KEY2 son de Holodex (rotan por paridad del día para evitar rate limits)
@@ -63,7 +63,7 @@ uv sync
 uv run python main.py
 ```
 
-Requiere API key de [Holodex](https://holodex.net/api).
+Requiere API keys de [Holodex](https://holodex.net/api) y de [YouTube Data API v3](https://console.cloud.google.com/apis/library/youtube.googleapis.com) (gratis, se crea en Google Cloud).
 
 ## Stack
 
