@@ -92,24 +92,34 @@ class ClipService:
             )
 
     def enrich_clips_with_views(self, clips: dict[str, Clip]) -> None:
-        """Add view counts to clips, marking the ones without data as unavailable."""
-        views = self.youtube_service.get_videos_views(list(clips))
+        """Add YouTube data to clips, marking the ones without data as unavailable."""
+        videos = self.youtube_service.get_videos_info(list(clips))
         for clip_id, clip in clips.items():
-            clip.views = views.get(clip_id, -1)  # -1 marca como no disponible
+            video = videos.get(clip_id)
+            if video:
+                clip.views = video.views
+                clip.is_vertical = video.is_vertical
+            else:
+                clip.views = -1  # -1 marca como no disponible
 
         # Un fallo de la API ya habria lanzado YouTubeApiError: estos clips existen en
         # Holodex pero YouTube no da sus vistas, asi que el top sigue siendo fiable
-        missing = len(clips) - len(views)
+        missing = len(clips) - len(videos)
         if missing:
             logging.info(
                 f"{missing}/{len(clips)} clips sin vistas disponibles "
                 "(borrados, privados u ocultos)"
             )
 
+        shorts = sum(clip.is_vertical for clip in clips.values())
+        if shorts:
+            logging.info(f"{shorts}/{len(clips)} clips descartados por ser verticales (Shorts)")
+
     def get_top_clips(self, clips: dict[str, Clip], count: int) -> list[Clip]:
         """Get the top N clips sorted by score, then return them in ascending order."""
-        # Filter out invalid views
-        valid_clips = [clip for clip in clips.values() if clip.views >= 0]
+        # Filter out invalid views and Shorts: the API has no Shorts field, but they are never
+        # horizontal, and the duration alone doesn't tell them apart (they can last 3 minutes)
+        valid_clips = [clip for clip in clips.values() if clip.views >= 0 and not clip.is_vertical]
 
         # First sort by score (descending) to get top N
         top_clips = sorted(valid_clips, key=lambda c: c.score, reverse=True)[:count]

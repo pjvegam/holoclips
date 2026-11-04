@@ -7,6 +7,7 @@ from helpers import FakeChannelRepository, make_clip, make_clip_data
 
 from api_service import HolodexApiError
 from clip_service import ClipService
+from models import VideoInfo
 from youtube_service import YouTubeApiError
 
 
@@ -130,17 +131,30 @@ def test_fetch_clips_stops_when_a_page_fails():
 
 def test_enrich_marks_clips_without_views_as_unavailable(clip_service):
     clips = {"a": make_clip("a"), "b": make_clip("b")}
-    clip_service.youtube_service = SimpleNamespace(get_videos_views=lambda ids: {"a": 7})
+    videos = {"a": VideoInfo(views=7, is_vertical=False)}
+    clip_service.youtube_service = SimpleNamespace(get_videos_info=lambda ids: videos)
     clip_service.enrich_clips_with_views(clips)
     assert clips["a"].views == 7
     assert clips["b"].views == -1
+
+
+def test_enrich_marks_vertical_clips(clip_service):
+    clips = {"short": make_clip("short"), "normal": make_clip("normal")}
+    videos = {
+        "short": VideoInfo(views=7, is_vertical=True),
+        "normal": VideoInfo(views=7, is_vertical=False),
+    }
+    clip_service.youtube_service = SimpleNamespace(get_videos_info=lambda ids: videos)
+    clip_service.enrich_clips_with_views(clips)
+    assert clips["short"].is_vertical is True
+    assert clips["normal"].is_vertical is False
 
 
 def test_enrich_propagates_api_errors(clip_service):
     def fail(ids):
         raise YouTubeApiError("cuota agotada")
 
-    clip_service.youtube_service = SimpleNamespace(get_videos_views=fail)
+    clip_service.youtube_service = SimpleNamespace(get_videos_info=fail)
     with pytest.raises(YouTubeApiError):
         clip_service.enrich_clips_with_views({"a": make_clip("a")})
 
@@ -153,6 +167,14 @@ def test_get_top_clips_returns_best_ones_in_ascending_order(clip_service):
     }
     top = clip_service.get_top_clips(clips, 2)
     assert [clip.id for clip in top] == ["mid", "high"]
+
+
+def test_get_top_clips_excludes_vertical_clips_even_with_best_score(clip_service):
+    available_at = datetime.now(UTC) - timedelta(hours=10)
+    short = make_clip("short", views=1000, available_at=available_at)
+    short.is_vertical = True
+    normal = make_clip("normal", views=10, available_at=available_at)
+    assert clip_service.get_top_clips({"short": short, "normal": normal}, 5) == [normal]
 
 
 def test_get_top_clips_ranks_with_channel_weight(clip_service):

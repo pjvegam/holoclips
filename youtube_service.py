@@ -4,9 +4,11 @@ import time
 
 import requests
 
+from models import VideoInfo
+
 
 class YouTubeApiError(Exception):
-    """The YouTube API could not return the requested view counts."""
+    """The YouTube API could not return the requested video data."""
 
 
 class YouTubeService:
@@ -18,19 +20,20 @@ class YouTubeService:
         # La key va en cabecera para que no aparezca en URLs ni en los logs
         self.headers = {"X-Goog-Api-Key": api_key}
 
-    def get_videos_views(self, video_ids: list[str]) -> dict[str, int]:
-        """Get view counts by video ID. Unavailable videos are left out of the result.
+    def get_videos_info(self, video_ids: list[str]) -> dict[str, VideoInfo]:
+        """Get video data by ID. Videos without a view count are left out of the result.
 
         Raises YouTubeApiError if a batch fails: a partial result would produce a wrong top.
         """
-        views = {}
+        videos = {}
         for i in range(0, len(video_ids), self.BATCH_SIZE):
-            views.update(self._fetch_batch(video_ids[i : i + self.BATCH_SIZE]))
-        return views
+            videos.update(self._fetch_batch(video_ids[i : i + self.BATCH_SIZE]))
+        return videos
 
-    def _fetch_batch(self, video_ids: list[str]) -> dict[str, int]:
-        """Fetch views for up to BATCH_SIZE videos (1 quota unit), retrying transient errors."""
-        params = {"part": "statistics", "id": ",".join(video_ids)}
+    def _fetch_batch(self, video_ids: list[str]) -> dict[str, VideoInfo]:
+        """Fetch data for up to BATCH_SIZE videos (1 quota unit), retrying transient errors."""
+        # maxHeight hace que la API devuelva las medidas del reproductor
+        params = {"part": "statistics,player", "id": ",".join(video_ids), "maxHeight": 720}
 
         for attempt in range(1, self.MAX_ATTEMPTS + 1):
             try:
@@ -41,7 +44,7 @@ class YouTubeService:
                 error = str(e)
             else:
                 if response.status_code == 200:
-                    return self._parse_views(response)
+                    return self._parse_videos(response)
 
                 error = self._describe_error(response)
                 # Key invalida, cuota agotada, etc: reintentar no lo va a arreglar
@@ -59,13 +62,23 @@ class YouTubeService:
         raise YouTubeApiError(f"sin respuesta tras {self.MAX_ATTEMPTS} intentos: {error}")
 
     @staticmethod
-    def _parse_views(response: requests.Response) -> dict[str, int]:
-        views = {}
+    def _parse_videos(response: requests.Response) -> dict[str, VideoInfo]:
+        videos = {}
         for item in response.json().get("items", []):
             view_count = item["statistics"].get("viewCount")
             if view_count is not None:
-                views[item["id"]] = int(view_count)
-        return views
+                videos[item["id"]] = VideoInfo(
+                    views=int(view_count),
+                    is_vertical=YouTubeService._is_vertical(item.get("player", {})),
+                )
+        return videos
+
+    @staticmethod
+    def _is_vertical(player: dict) -> bool:
+        """Tell if the player is square or vertical. Unknown sizes count as not vertical."""
+        # La API devuelve las medidas como texto, y solo si conoce la proporcion del video
+        width, height = player.get("embedWidth"), player.get("embedHeight")
+        return width is not None and height is not None and int(width) <= int(height)
 
     @staticmethod
     def _describe_error(response: requests.Response) -> str:

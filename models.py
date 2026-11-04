@@ -9,6 +9,12 @@ class Channel:
 
 
 @dataclass
+class VideoInfo:
+    views: int
+    is_vertical: bool
+
+
+@dataclass
 class Clip:
     id: str
     title: str
@@ -16,6 +22,7 @@ class Clip:
     duration: int = 0
     views: int = 0
     channel_weight: float = 1.0
+    is_vertical: bool = False
 
     @property
     def views_per_hour(self) -> float:
