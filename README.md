@@ -1,13 +1,13 @@
 # holoclips
 
-> CLI para descubrir los clips más vistos de canales de Hololive Production y generar playlists reproducibles en MPV.
+> CLI para descubrir los clips más vistos de canales de Hololive Production, abrirlos en el navegador o reproducirlos en MPV.
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## ¿Qué hace?
 
-Consulta la API de [Holodex](https://holodex.net/) para una fecha dada, obtiene los clips subidos ese día de una lista curada de canales de Hololive Production (~60 miembros), enriquece cada clip con su cantidad de views vía YouTube API, ordena por popularidad ponderada según el peso asignado a cada canal, y genera un playlist `.m3u` que abre automáticamente en MPV.
+Consulta la API de [Holodex](https://holodex.net/) para una fecha dada, obtiene los clips subidos ese día de una lista curada de canales ([`channels.toml`](channels.toml)), enriquece cada clip con su cantidad de views vía YouTube Data API y los ordena por vistas por hora, ponderadas según el peso de cada canal. Muestra el ranking en una tabla, genera un playlist `.m3u` y abre los clips en el navegador (o en MPV con `--mpv`).
 
 ## Uso
 
@@ -20,16 +20,19 @@ python main.py 10 --fecha 2025.06.15
 
 # Top 3 clips de 5 días atrás
 python main.py 3 --delay 5
+
+# Reproducir el top en MPV en vez de abrirlo en el navegador
+python main.py --mpv
 ```
 
 ## Requisitos del sistema
 
-Además de Python 3.12+ y [uv](https://docs.astral.sh/uv/), necesitas estos binarios instalados en el PATH (no vienen por pip):
+Además de Python 3.12+ y [uv](https://docs.astral.sh/uv/), para usar `--mpv` necesitas estos binarios instalados en el PATH (no vienen por pip). Para abrir los clips en el navegador no hacen falta:
 
-| Binario | Para qué | Obligatorio |
+| Binario | Para qué | Con `--mpv` |
 |---------|----------|-------------|
-| **mpv** | Reproductor donde se abre el playlist generado | Sí |
-| **yt-dlp** | mpv lo usa internamente para resolver URLs de YouTube | Sí |
+| **mpv** | Reproductor donde se abre el playlist generado | Obligatorio |
+| **yt-dlp** | mpv lo usa internamente para resolver URLs de YouTube | Obligatorio |
 | **ffmpeg** | yt-dlp lo usa para combinar streams de audio y video | Recomendado |
 
 ```bash
@@ -65,33 +68,46 @@ uv run python main.py
 
 Requiere API keys de [Holodex](https://holodex.net/api) y de [YouTube Data API v3](https://console.cloud.google.com/apis/library/youtube.googleapis.com) (gratis, se crea en Google Cloud).
 
+## Desarrollo
+
+```bash
+uv run pytest             # tests (sin red ni API keys)
+uv run ruff check .       # lint
+uv run ruff format .      # formato
+```
+
 ## Stack
 
 - Python 3.12+
 - `requests` para HTTP
 - `python-dotenv` para config
 - Gestión de dependencias con `uv`
+- `pytest` y `ruff` para tests y calidad de código
 
 ## Estructura
 
 ```
 holoclips/
 ├── main.py                # CLI + orquestación
+├── channels.toml          # lista curada de canales con pesos
+├── channel_repository.py  # carga y consulta de canales
 ├── api_service.py         # cliente Holodex API
-├── channel_repository.py  # lista curada de canales con pesos
+├── youtube_service.py     # vistas vía YouTube Data API
 ├── clip_service.py        # fetching + enrichment + ranking
+├── output.py              # tabla en consola, mpv y navegador
 ├── playlist_generator.py  # genera .m3u
-├── youtube_service.py     # consultas de view count
 ├── models.py              # dataclasses
-└── config.py              # config desde .env
+├── config.py              # config desde .env
+└── tests/
 ```
 
 ## Decisiones de diseño
 
-- **Weighted ranking**: cada canal tiene un peso asignado (miembros con menos suscriptores tienen peso mayor). Los clips se ordenan por `views × weight`, de modo que canales menos populares no queden siempre invisibles bajo las estrellas.
+- **Weighted ranking**: cada canal tiene un peso asignado (miembros con menos suscriptores tienen peso mayor). Los clips se ordenan por `score = vistas por hora × peso`, de modo que canales menos populares no queden siempre invisibles bajo las estrellas. La tabla muestra las vistas por hora reales y el score por separado.
 - **Rotación de API keys por paridad del día**: para no exceder rate limits de Holodex cuando se corre esto diariamente, se alterna entre dos keys según si el día del mes es par o impar.
-- **Repository pattern** para canales: la lista curada se mantiene en memoria y se comporta como catálogo consultable, en lugar de estar dispersa en el código.
-- **Separación en servicios**: `api_service`, `clip_service`, `youtube_service`, `playlist_generator` — cada uno con una responsabilidad, facilita testear y modificar.
+- **Repository pattern** para canales: la lista curada vive en `channels.toml` y se comporta como catálogo consultable, así que agregar un canal no requiere tocar código.
+- **Separación en servicios**: `api_service`, `clip_service`, `youtube_service`, `playlist_generator`, `output` — cada uno con una responsabilidad, facilita testear y modificar.
+- **Sin top parcial**: si YouTube Data API falla tras los reintentos, el programa termina con error en vez de generar un ranking al que le falten clips.
 
 ## Estado
 
