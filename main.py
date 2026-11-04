@@ -1,16 +1,13 @@
 import argparse
 import logging
-import shutil
-import subprocess
 import sys
-import time
-import webbrowser
 from datetime import datetime, timedelta
 
 from api_service import HolodexApiService
 from channel_repository import ChannelRepository
 from clip_service import ClipService
 from config import Config
+from output import open_in_browser, play_with_mpv, print_top_clips_table
 from playlist_generator import PlaylistGenerator
 from youtube_service import YouTubeApiError, YouTubeService
 
@@ -29,28 +26,6 @@ def parse_args():
     )
 
     return parser.parse_args()
-
-
-def print_top_clips_table(top_clips):
-    """Imprime una tabla con el ranking del top de clips antes de reproducir/abrir."""
-    # top_clips viene ordenado ascendente por score; el ranking va del mejor al peor.
-    ranked = sorted(top_clips, key=lambda c: c.score, reverse=True)
-
-    print()
-    print("=" * 107)
-    print(f" TOP {len(ranked)} CLIPS")
-    print("=" * 107)
-    print(f"{'#':<3}{'Vistas':>9}  {'V/hora':>9}  {'Peso':>5}  {'Score':>9}  {'Dur':>5}  Título")
-    print("-" * 107)
-    for i, clip in enumerate(ranked, start=1):
-        title = clip.title if len(clip.title) <= 55 else clip.title[:54] + "…"
-        mins, secs = divmod(int(clip.duration), 60)
-        print(
-            f"{i:<3}{clip.views:>9,}  {clip.views_per_hour:>9.1f}  "
-            f"{clip.channel_weight:>5.2f}  {clip.score:>9.1f}  {mins:>2}:{secs:02d}  {title}"
-        )
-    print("=" * 107)
-    print()
 
 
 def main():
@@ -117,26 +92,15 @@ def main():
     logging.info(f"Created playlist with {len(top_clips)} clips at {playlist_path}")
 
     # Con --mpv se reproduce el top con mpv. Por defecto se abren TODOS los top
-    # clips en el navegador (vistas reales que ayudan al clipper).
+    # clips en el navegador.
     # top_clips viene ordenado ascendente por score, asi que el mejor queda al final.
     if args.mpv:
-        # which() respeta PATHEXT: en Windows elige mpv.com, igual que la consola
-        mpv_path = shutil.which("mpv")
-        if not mpv_path:
+        if not play_with_mpv(playlist_path):
             logging.error("No se encontró mpv en el PATH")
             sys.exit(1)
-        subprocess.run([mpv_path, playlist_path], check=False)
         return
 
-    # Abrir en el navegador (comportamiento por defecto)
-    for i, clip in enumerate(top_clips):
-        url = f"https://www.youtube.com/watch?v={clip.id}"
-        logging.info(f"Abriendo en el navegador: {clip.title} ({url})")
-        webbrowser.open_new_tab(url)
-        # Pequeño delay entre pestañas: sin esto el navegador las abre en
-        # paralelo y no respeta el orden. No dormir tras la ultima.
-        if i < len(top_clips) - 1:
-            time.sleep(0.8)
+    open_in_browser(top_clips)
 
 
 if __name__ == "__main__":
