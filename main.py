@@ -16,7 +16,9 @@ from youtube_service import YouTubeApiError, YouTubeService
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Find top YouTube clips for specific channels")
-    parser.add_argument("num_clips", type=int, nargs='?', default=5, help="Number of clips to include")
+    parser.add_argument(
+        "num_clips", type=int, nargs="?", default=5, help="Number of clips to include"
+    )
     parser.add_argument("-f", "--fecha", type=str, help="Date in format YYYY.MM.DD")
     parser.add_argument("-d", "--delay", type=int, help="Days ago")
     parser.add_argument(
@@ -26,6 +28,7 @@ def parse_args():
     )
 
     return parser.parse_args()
+
 
 def print_top_clips_table(top_clips):
     """Imprime una tabla con el ranking del top de clips antes de reproducir/abrir."""
@@ -50,7 +53,7 @@ def print_top_clips_table(top_clips):
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
     args = parse_args()
 
@@ -58,7 +61,9 @@ def main():
         year, month, day = args.fecha.split(".")
         target_date = datetime(int(year), int(month), int(day))
     else:
-        target_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=2)
+        target_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(
+            days=2
+        )
 
     if args.delay:
         target_date = target_date - timedelta(days=args.delay)
@@ -111,7 +116,7 @@ def main():
     # top_clips viene ordenado ascendente por views_per_hour, asi que el mejor queda al final.
     if args.mpv:
         try:
-            #subprocess.run(['mpv', playlist_path])
+            # subprocess.run(['mpv', playlist_path])
             os.system(f'mpv "{playlist_path}"')
         except Exception as e:
             logging.error(f"Failed to open mpv: {e!s}")

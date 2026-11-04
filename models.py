@@ -7,6 +7,7 @@ class Channel:
     name: str
     weight: float
 
+
 @dataclass
 class Clip:
     id: str

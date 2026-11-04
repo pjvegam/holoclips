@@ -10,13 +10,13 @@ class YouTubeApiError(Exception):
 
 
 class YouTubeService:
-    BASE_URL = 'https://www.googleapis.com/youtube/v3/videos'
+    BASE_URL = "https://www.googleapis.com/youtube/v3/videos"
     BATCH_SIZE = 50  # Maximo de IDs por llamada a videos.list
     MAX_ATTEMPTS = 3
 
     def __init__(self, api_key: str):
         # La key va en cabecera para que no aparezca en URLs ni en los logs
-        self.headers = {'X-Goog-Api-Key': api_key}
+        self.headers = {"X-Goog-Api-Key": api_key}
 
     def get_videos_views(self, video_ids: list[str]) -> dict[str, int]:
         """Get view counts by video ID. Unavailable videos are left out of the result.
@@ -25,16 +25,18 @@ class YouTubeService:
         """
         views = {}
         for i in range(0, len(video_ids), self.BATCH_SIZE):
-            views.update(self._fetch_batch(video_ids[i:i + self.BATCH_SIZE]))
+            views.update(self._fetch_batch(video_ids[i : i + self.BATCH_SIZE]))
         return views
 
     def _fetch_batch(self, video_ids: list[str]) -> dict[str, int]:
         """Fetch view counts for up to BATCH_SIZE videos (1 quota unit), retrying transient errors."""
-        params = {'part': 'statistics', 'id': ','.join(video_ids)}
+        params = {"part": "statistics", "id": ",".join(video_ids)}
 
         for attempt in range(1, self.MAX_ATTEMPTS + 1):
             try:
-                response = requests.get(self.BASE_URL, headers=self.headers, params=params, timeout=10)
+                response = requests.get(
+                    self.BASE_URL, headers=self.headers, params=params, timeout=10
+                )
             except requests.RequestException as e:
                 error = str(e)
             else:
@@ -48,8 +50,10 @@ class YouTubeService:
 
             if attempt < self.MAX_ATTEMPTS:
                 delay = 2 ** (attempt - 1)
-                logging.warning(f"YouTube API falló (intento {attempt}/{self.MAX_ATTEMPTS}), "
-                                f"reintentando en {delay}s: {error}")
+                logging.warning(
+                    f"YouTube API falló (intento {attempt}/{self.MAX_ATTEMPTS}), "
+                    f"reintentando en {delay}s: {error}"
+                )
                 time.sleep(delay)
 
         raise YouTubeApiError(f"sin respuesta tras {self.MAX_ATTEMPTS} intentos: {error}")
@@ -57,17 +61,17 @@ class YouTubeService:
     @staticmethod
     def _parse_views(response: requests.Response) -> dict[str, int]:
         views = {}
-        for item in response.json().get('items', []):
-            view_count = item['statistics'].get('viewCount')
+        for item in response.json().get("items", []):
+            view_count = item["statistics"].get("viewCount")
             if view_count is not None:
-                views[item['id']] = int(view_count)
+                views[item["id"]] = int(view_count)
         return views
 
     @staticmethod
     def _describe_error(response: requests.Response) -> str:
         """Build a short error message from the API's JSON error body."""
         try:
-            message = response.json()['error']['message']
+            message = response.json()["error"]["message"]
         except (ValueError, KeyError, TypeError):
             message = response.text[:200]
         return f"{response.status_code} - {message}"
