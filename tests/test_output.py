@@ -33,7 +33,11 @@ def test_play_with_mpv_runs_resolved_executable(monkeypatch):
     monkeypatch.setattr(output.shutil, "which", lambda name: f"/bin/{name}")
     monkeypatch.setattr(output.subprocess, "run", lambda cmd, check: calls.append(cmd))
     assert output.play_with_mpv("lista.m3u") is True
-    assert calls == [["/bin/mpv", "lista.m3u"]]
+    assert calls == [["/bin/mpv", output.MPV_PLAYER_CLIENT_OPTION, "lista.m3u"]]
+
+
+def test_mpv_avoids_player_client_that_gets_http_403():
+    assert "player_client=web_safari" in output.MPV_PLAYER_CLIENT_OPTION
 
 
 def test_play_with_mpv_reports_missing_executable(monkeypatch):

@@ -6,6 +6,12 @@ import webbrowser
 
 from models import Clip
 
+# Los formatos DASH de 'default,-tv' (el valor de mpv.conf) dan HTTP 403 porque exigen un
+# PO token. Con 'web_safari' mpv reproduce sin errores. Esta opcion reemplaza a la de mpv.conf.
+MPV_PLAYER_CLIENT_OPTION = (
+    "--ytdl-raw-options-append=extractor-args=youtube:player_client=web_safari"
+)
+
 
 def print_top_clips_table(top_clips: list[Clip]) -> None:
     """Imprime una tabla con el ranking del top de clips antes de reproducir/abrir."""
@@ -35,7 +41,7 @@ def play_with_mpv(playlist_path: str) -> bool:
     mpv_path = shutil.which("mpv")
     if not mpv_path:
         return False
-    subprocess.run([mpv_path, playlist_path], check=False)
+    subprocess.run([mpv_path, MPV_PLAYER_CLIENT_OPTION, playlist_path], check=False)
     return True
 
 
