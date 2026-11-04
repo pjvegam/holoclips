@@ -48,7 +48,7 @@ class ClipService:
                     if not clip_data:
                         continue
 
-                    # Si recibimos menos resultados que el límite, significa que hemos llegado al final
+                    # Menos resultados que el límite significa que hemos llegado al final
                     if len(clip_data) < limit:
                         logging.info(f"Reached end of results with {len(clip_data)} clips")
 
@@ -119,7 +119,8 @@ class ClipService:
         missing = len(clips) - len(views)
         if missing:
             logging.info(
-                f"{missing}/{len(clips)} clips sin vistas disponibles (borrados, privados u ocultos)"
+                f"{missing}/{len(clips)} clips sin vistas disponibles "
+                "(borrados, privados u ocultos)"
             )
 
     def get_top_clips(self, clips: dict[str, Clip], count: int) -> list[Clip]:

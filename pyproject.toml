@@ -32,6 +32,9 @@ select = [
     "S",   # flake8-bandit (seguridad)
     "RUF", # ruff-specific
 ]
+ignore = [
+    "S603", # subprocess sin shell=True es seguro
+]
 
 [tool.ruff.lint.per-file-ignores]
 # Los nombres de canal usan caracteres Unicode propios: son el dato, no una confusion tipografica

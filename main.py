@@ -1,6 +1,7 @@
 import argparse
 import logging
-import os
+import shutil
+import subprocess
 import sys
 import time
 import webbrowser
@@ -24,7 +25,7 @@ def parse_args():
     parser.add_argument(
         "--mpv",
         action="store_true",
-        help="Reproducir el top con mpv en vez de abrirlo en el navegador (comportamiento por defecto)",
+        help="Reproducir el top con mpv en vez de abrirlo en el navegador",
     )
 
     return parser.parse_args()
@@ -115,11 +116,12 @@ def main():
     # clips en el navegador (vistas reales que ayudan al clipper).
     # top_clips viene ordenado ascendente por views_per_hour, asi que el mejor queda al final.
     if args.mpv:
-        try:
-            # subprocess.run(['mpv', playlist_path])
-            os.system(f'mpv "{playlist_path}"')
-        except Exception as e:
-            logging.error(f"Failed to open mpv: {e!s}")
+        # which() respeta PATHEXT: en Windows elige mpv.com, igual que la consola
+        mpv_path = shutil.which("mpv")
+        if not mpv_path:
+            logging.error("No se encontró mpv en el PATH")
+            sys.exit(1)
+        subprocess.run([mpv_path, playlist_path], check=False)
         return
 
     # Abrir en el navegador (comportamiento por defecto)

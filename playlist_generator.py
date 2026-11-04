@@ -5,7 +5,7 @@ from models import Clip
 
 
 class PlaylistGenerator:
-    def __init__(self, project_path: str = None):
+    def __init__(self, project_path: str | None = None):
         self.project_path = project_path or Config.PROJECT_PATH
 
     def create_playlist(self, clips: list[Clip], filename: str = "clips.m3u") -> str:

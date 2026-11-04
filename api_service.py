@@ -14,7 +14,7 @@ class HolodexApiService:
         self,
         from_date: datetime,
         to_date: datetime,
-        langs: list[str] = None,
+        langs: list[str] | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[dict]:
@@ -32,7 +32,7 @@ class HolodexApiService:
             "limit": limit,
         }
 
-        response = requests.get(self.BASE_URL, headers=self.headers, params=params)
+        response = requests.get(self.BASE_URL, headers=self.headers, params=params, timeout=20)
         if response.status_code != 200:
             raise Exception(f"API request failed: {response.status_code} - {response.text}")
 

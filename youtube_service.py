@@ -29,7 +29,7 @@ class YouTubeService:
         return views
 
     def _fetch_batch(self, video_ids: list[str]) -> dict[str, int]:
-        """Fetch view counts for up to BATCH_SIZE videos (1 quota unit), retrying transient errors."""
+        """Fetch views for up to BATCH_SIZE videos (1 quota unit), retrying transient errors."""
         params = {"part": "statistics", "id": ",".join(video_ids)}
 
         for attempt in range(1, self.MAX_ATTEMPTS + 1):
