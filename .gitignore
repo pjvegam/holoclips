@@ -16,3 +16,6 @@ wheels/
 # MPV screenshots
 mpv-shot*.jpg
 mpv-shot*.png
+
+# Claude Code local settings
+.claude/settings.local.json
