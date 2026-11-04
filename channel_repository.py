@@ -74,6 +74,12 @@ class ChannelRepository:
             "UCjk2nKmHzgH5Xy-C5qYRd5A": Channel(name="Su Ch. 水宮枢 - FLOW GLOW", weight=3.31),
             "UCKMWFR6lAstLa7Vbf5dH7ig": Channel(name="Chihaya Ch. 輪堂 千速 - FLOW GLOW", weight=3.31),
             "UCGzTVXqMQHa4AgJVJIVvtDQ": Channel(name="Vivi Ch. 綺々羅々ヴィヴィ - FLOW GLOW", weight=3.31),
+            #ASOBI MAWARI-TAI
+            "UCAHwWUotyS3l2qBetFDsjgQ": Channel(name="アソビ★まわり隊!", weight=1.0),
+            "UC8eitCE9Z6EwUCs-VUi1blg": Channel(name="Mela Ch. 熱千めら‐ アソビ★まわり隊!", weight=3.31),
+            "UCy9mgxB8pn2C4aNK_MPthDQ": Channel(name="Tsuzuri Ch. 鈴鳴つづり ‐ アソビ★まわり隊!", weight=3.31),
+            "UCSjQDxud2HkAO2DVD3lwxmw": Channel(name="Kyoko Ch. 百灯キョーコ ‐ アソビ★まわり隊!", weight=3.31),
+            "UCROQtXcp2loQEmvpe5rhJzQ": Channel(name="Sopia Ch. 宙科そぴあ ‐ アソビ★まわり隊!", weight=3.31),
             #ENGen1
             "UCHsx4Hqa-1ORjQTh9TYDhww": Channel(name="Takanashi Kiara Ch. hololive-EN", weight=1.0),
             "UCL_qhgtOy0dy1Agp8vkySQg": Channel(name="Mori Calliope Ch. hololive-EN", weight=1.0),
