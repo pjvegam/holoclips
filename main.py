@@ -33,23 +33,23 @@ def parse_args():
 
 def print_top_clips_table(top_clips):
     """Imprime una tabla con el ranking del top de clips antes de reproducir/abrir."""
-    # top_clips viene ordenado ascendente por views_per_hour; el ranking va del mejor al peor.
-    ranked = sorted(top_clips, key=lambda c: c.views_per_hour, reverse=True)
+    # top_clips viene ordenado ascendente por score; el ranking va del mejor al peor.
+    ranked = sorted(top_clips, key=lambda c: c.score, reverse=True)
 
     print()
-    print("=" * 96)
+    print("=" * 107)
     print(f" TOP {len(ranked)} CLIPS")
-    print("=" * 96)
-    print(f"{'#':<3}{'Vistas':>9}  {'V/hora':>9}  {'Peso':>5}  {'Dur':>5}  Título")
-    print("-" * 96)
+    print("=" * 107)
+    print(f"{'#':<3}{'Vistas':>9}  {'V/hora':>9}  {'Peso':>5}  {'Score':>9}  {'Dur':>5}  Título")
+    print("-" * 107)
     for i, clip in enumerate(ranked, start=1):
         title = clip.title if len(clip.title) <= 55 else clip.title[:54] + "…"
         mins, secs = divmod(int(clip.duration), 60)
         print(
             f"{i:<3}{clip.views:>9,}  {clip.views_per_hour:>9.1f}  "
-            f"{clip.channel_weight:>5.2f}  {mins:>2}:{secs:02d}  {title}"
+            f"{clip.channel_weight:>5.2f}  {clip.score:>9.1f}  {mins:>2}:{secs:02d}  {title}"
         )
-    print("=" * 96)
+    print("=" * 107)
     print()
 
 
@@ -114,7 +114,7 @@ def main():
 
     # Con --mpv se reproduce el top con mpv. Por defecto se abren TODOS los top
     # clips en el navegador (vistas reales que ayudan al clipper).
-    # top_clips viene ordenado ascendente por views_per_hour, asi que el mejor queda al final.
+    # top_clips viene ordenado ascendente por score, asi que el mejor queda al final.
     if args.mpv:
         # which() respeta PATHEXT: en Windows elige mpv.com, igual que la consola
         mpv_path = shutil.which("mpv")

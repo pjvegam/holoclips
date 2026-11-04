@@ -124,12 +124,12 @@ class ClipService:
             )
 
     def get_top_clips(self, clips: dict[str, Clip], count: int) -> list[Clip]:
-        """Get the top N clips sorted by views per hour, then return them in ascending order."""
+        """Get the top N clips sorted by score, then return them in ascending order."""
         # Filter out invalid views
         valid_clips = [clip for clip in clips.values() if clip.views >= 0]
 
-        # First sort by views per hour (descending) to get top N
-        top_clips = sorted(valid_clips, key=lambda c: c.views_per_hour, reverse=True)[:count]
+        # First sort by score (descending) to get top N
+        top_clips = sorted(valid_clips, key=lambda c: c.score, reverse=True)[:count]
 
         # Then reorder those top N clips in ascending order
-        return sorted(top_clips, key=lambda c: c.views_per_hour)
+        return sorted(top_clips, key=lambda c: c.score)

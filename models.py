@@ -18,10 +18,6 @@ class Clip:
     channel_weight: float = 1.0
 
     @property
-    def weighted_views(self) -> float:
-        return self.views * self.channel_weight
-
-    @property
     def views_per_hour(self) -> float:
         current_time = datetime.now(UTC)
 
@@ -32,4 +28,9 @@ class Clip:
         if hours_available <= 0:
             return 0
 
-        return self.weighted_views / hours_available
+        return self.views / hours_available
+
+    @property
+    def score(self) -> float:
+        """Ranking value: views per hour boosted by the channel weight."""
+        return self.views_per_hour * self.channel_weight
