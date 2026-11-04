@@ -8,10 +8,11 @@ from api_service import HolodexApiService
 import logging
 
 class ClipService:
-    def __init__(self, api_service: HolodexApiService, channel_repo: ChannelRepository):
+    def __init__(self, api_service: HolodexApiService, channel_repo: ChannelRepository,
+                 youtube_service: YouTubeService):
         self.api_service = api_service
         self.channel_repo = channel_repo
-        self.youtube_service = YouTubeService()
+        self.youtube_service = youtube_service
 
     def fetch_clips_for_date(self, target_date: datetime, max_workers: int = 10) -> Dict[str, Clip]:
         """Fetch all clips for a specific date using parallel processing."""
@@ -91,26 +92,16 @@ class ClipService:
         else:
             clip_collection[clip_id].channel_weight = max(clip_collection[clip_id].channel_weight, max_weight)
 
-    def enrich_clips_with_views(self, clips: Dict[str, Clip], max_workers: int = 20) -> None:
-        """Add view counts to clips using ThreadPoolExecutor with optimized workers."""
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_clip = {
-                executor.submit(self._fetch_views_for_clip, clip_id): clip_id
-                for clip_id in clips
-            }
+    def enrich_clips_with_views(self, clips: Dict[str, Clip]) -> None:
+        """Add view counts to clips, marking the ones without data as unavailable."""
+        views = self.youtube_service.get_videos_views(list(clips))
+        for clip_id, clip in clips.items():
+            clip.views = views.get(clip_id, -1)  # -1 marca como no disponible
 
-            for future in as_completed(future_to_clip):
-                clip_id = future_to_clip[future]
-                try:
-                    views = future.result(timeout=15)  # Añadir timeout de 15 segundos
-                    clips[clip_id].views = views
-                except Exception as e:
-                    logging.error(f"Error getting views for {clip_id}: {str(e)}")
-                    clips[clip_id].views = -1  # Marcar como no disponible
-
-    def _fetch_views_for_clip(self, clip_id: str) -> int:
-        """Fetch view count for a single clip."""
-        return self.youtube_service.get_video_views(clip_id)
+        # Sin esto, un top calculado con datos parciales pareceria correcto
+        missing = len(clips) - len(views)
+        if missing:
+            logging.warning(f"{missing}/{len(clips)} clips sin vistas: el top puede estar incompleto")
 
     def get_top_clips(self, clips: Dict[str, Clip], count: int) -> List[Clip]:
         """Get the top N clips sorted by views per hour, then return them in ascending order."""

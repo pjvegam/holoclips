@@ -3,6 +3,7 @@ from config import Config
 from channel_repository import ChannelRepository
 from api_service import HolodexApiService
 from clip_service import ClipService
+from youtube_service import YouTubeService
 from playlist_generator import PlaylistGenerator
 import argparse
 import logging
@@ -63,9 +64,14 @@ def main():
 
     api_key = Config.API_KEY1 if target_date.day % 2 == 0 else Config.API_KEY2
 
+    if not Config.YOUTUBE_API_KEY:
+        logging.error("Falta YOUTUBE_API_KEY en el .env")
+        return
+
     channel_repo = ChannelRepository()
     api_service = HolodexApiService(api_key)
-    clip_service = ClipService(api_service, channel_repo)
+    youtube_service = YouTubeService(Config.YOUTUBE_API_KEY)
+    clip_service = ClipService(api_service, channel_repo, youtube_service)
     playlist_generator = PlaylistGenerator()
 
     # Get clips and calculate metrics

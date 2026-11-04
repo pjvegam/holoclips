@@ -54,6 +54,7 @@ cp .env.example .env  # o crearlo directo
 
 # Editar .env con tus API keys
 # API_KEY1 y API_KEY2 son de Holodex (rotan por paridad del día para evitar rate limits)
+# YOUTUBE_API_KEY es de YouTube Data API v3 (para obtener las vistas de los clips)
 
 # Instalar dependencias con uv
 uv sync
